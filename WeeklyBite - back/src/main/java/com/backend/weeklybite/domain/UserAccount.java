@@ -1,5 +1,6 @@
 package com.backend.weeklybite.domain;
 
+import com.backend.weeklybite.domain.enums.AccountStatus;
 import com.backend.weeklybite.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,11 @@ public class UserAccount {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
+
     @Transient
     private String jwt;
 
