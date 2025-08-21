@@ -8,12 +8,12 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "activation_tokens")
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class ActivationToken {
 
     @Id
@@ -32,4 +32,15 @@ public class ActivationToken {
 
     @Column(nullable = false)
     private boolean activated;
+
+    public ActivationToken(String token, UserAccount user, LocalDateTime expiryDate) {
+        this.token = token;
+        this.user = user;
+        this.expiryDate = expiryDate;
+        this.activated = false;
+    }
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiryDate);
+    }
 }

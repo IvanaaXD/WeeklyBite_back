@@ -21,3 +21,9 @@ VALUES
     (7, 'Milan', 'Milanović', '+381641111111', 'https://example.com/profiles/milan.jpg', 7, 'Zajecar, Serbia'),
     (8, 'Sandra', 'Sandrić', '+381641234890', 'https://example.com/profiles/sandra.jpg', 8, 'Novi Sad, Serbia'),
     (9, 'Stefan', 'Stefanović', '+3816554890', 'https://example.com/profiles/stefan.jpg', 9, 'Beograd, Serbia');
+
+
+SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
+SELECT setval('person_id_seq', (SELECT MAX(id) FROM person));
+--SELECT setval('category_id_seq', (SELECT MAX(id) FROM category));
+SELECT setval('comment_id_seq', (SELECT MAX(id) FROM comment))

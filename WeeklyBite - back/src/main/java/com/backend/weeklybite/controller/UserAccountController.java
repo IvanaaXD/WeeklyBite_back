@@ -59,6 +59,17 @@ public class UserAccountController {
         return new ResponseEntity<GetAccountDTO>(account, HttpStatus.OK);
     }
 
+//    @GetMapping("/activate")
+//    public ResponseEntity<String> activateAccount(@RequestParam("token") String token) {
+//        try {
+//            accountService.verificateAccount(token);
+//            return ResponseEntity.ok("Account successfully activated!");
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Invalid or expired token.");
+//        }
+//    }
+
+
 //    @PostMapping("/{accountId}/favorites/{recipeId}")
 //    public ResponseEntity<GetRecipeDTO> addFavoriteRecipe(
 //            @PathVariable Long accountId,

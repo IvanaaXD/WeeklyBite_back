@@ -1,5 +1,6 @@
 package com.backend.weeklybite.service;
 
+import com.backend.weeklybite.domain.ActivationToken;
 import com.backend.weeklybite.domain.Person;
 import com.backend.weeklybite.domain.UserAccount;
 import com.backend.weeklybite.domain.enums.AccountStatus;
@@ -61,7 +62,7 @@ public class AccountService implements IAccountService, UserDetailsService {
     @Override
     public GetAccountDTO getUserAccountById(Long id) {
         UserAccount account = allAccounts.findById(id).orElse(null);
-        //.orElseThrow(() -> new EntityNotFoundException("Product with id "  id  " not found"));
+        //.orElseThrow(() -> new EntityNotFoundException("User with id "  id  " not found"));
         return modelMapper.map(account, GetAccountDTO.class);
     }
 
@@ -103,6 +104,23 @@ public class AccountService implements IAccountService, UserDetailsService {
     }
 
     public void activateAccount(String token) {
+        ActivationToken activationToken = activationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid activation token"));
+
+        if (activationToken.isExpired()) {
+            activationTokenRepository.delete(activationToken);
+            throw new RuntimeException("Activation token has expired. Please register again.");
+        }
+        if (activationToken.isActivated()) {
+            throw new RuntimeException("Account already activated.");
+        }
+
+        UserAccount user = activationToken.getUser();
+        user.setAccountStatus(AccountStatus.ACTIVE);
+        allAccounts.save(user);
+
+        activationToken.setActivated(true);
+        activationTokenRepository.save(activationToken);
     }
 
     @Override
@@ -133,7 +151,7 @@ public class AccountService implements IAccountService, UserDetailsService {
     @Override
     public GetAccountDTO getUserAccountByEmail(String email) {
         UserAccount product = allAccounts.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Product with email " + email + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found"));
         return modelMapper.map(product, GetAccountDTO.class);
     }
 }
