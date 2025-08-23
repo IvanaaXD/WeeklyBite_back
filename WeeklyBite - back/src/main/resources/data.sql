@@ -21,3 +21,41 @@ VALUES
     (7, 'Milan', 'Milanović', '+381641111111', 'https://example.com/profiles/milan.jpg', 7, 'Zajecar, Serbia'),
     (8, 'Sandra', 'Sandrić', '+381641234890', 'https://example.com/profiles/sandra.jpg', 8, 'Novi Sad, Serbia'),
     (9, 'Stefan', 'Stefanović', '+3816554890', 'https://example.com/profiles/stefan.jpg', 9, 'Beograd, Serbia');
+
+
+INSERT INTO ingredient (id, name, quantity, unit) VALUES
+    (1, 'Paradajz', 5, 'kom'),
+    (2, 'Šećer', 4, 'kašika'),
+    (3, 'Brašno', 5, 'kašičica'),
+    (4, 'Mleko', 200, 'ml'),
+    (5, 'Jaja', 3, 'kom');
+
+INSERT INTO recipe (id, created, updated, name, content, description, duration, number_of_people, category, is_deleted, admin_id)
+VALUES
+    (1, CURRENT_DATE, CURRENT_DATE, 'Pita sa sirom', 'Domaća pita sa sirom i jajima', '', 60, 4, 'BREAKFAST', FALSE, 1),
+    (2, CURRENT_DATE, CURRENT_DATE, 'Kolač sa jagodama', 'Slatki desert sa jagodama i šlagom', '', 90, 6, 'DESSERT', FALSE, 2);
+
+-- Recept 1: Pita sa sirom
+INSERT INTO recipe_ingredient (recipe_id, ingredient_id) VALUES
+    (1, 3), -- Brašno
+    (1, 4), -- Mleko
+    (1, 5); -- Jaja
+
+-- Recept 2: Kolač sa jagodama
+INSERT INTO recipe_ingredient (recipe_id, ingredient_id) VALUES
+    (2, 2), -- Šećer
+    (2, 3), -- Brašno
+    (2, 4), -- Mleko
+    (2, 5); -- Jaja
+
+INSERT INTO recipe_pictures (recipe_id, picture_path) VALUES
+    (1, 'pita.png'),
+    (1, 'pita2.jpg'),
+    (2, 'kolac.jpg');
+
+
+SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
+SELECT setval('person_id_seq', (SELECT MAX(id) FROM person));
+SELECT setval('comment_id_seq', (SELECT MAX(id) FROM comment));
+SELECT setval('recipe_id_seq', (SELECT MAX(id) FROM recipe));
+SELECT setval('ingredient_id_seq', (SELECT MAX(id) FROM ingredient));
