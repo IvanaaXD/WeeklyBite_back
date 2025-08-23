@@ -2,13 +2,16 @@ package com.backend.weeklybite.service;
 
 import com.backend.weeklybite.domain.Recipe;
 import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
+import com.backend.weeklybite.dto.recipe.RecipeFilterDTO;
 import com.backend.weeklybite.repository.RecipeRepository;
 import com.backend.weeklybite.service.interfaces.IRecipeService;
+import com.backend.weeklybite.specification.RecipeSpecification;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,6 +74,11 @@ public class RecipeService implements IRecipeService {
 
     public long getRecipeCount() {
         return allRecipes.count();
+    }
+
+    public Page<Recipe> filterRecipes(RecipeFilterDTO filter, Pageable pageable) {
+        Specification<Recipe> specification = new RecipeSpecification(filter);
+        return allRecipes.findAll(specification, pageable);
     }
 }
 

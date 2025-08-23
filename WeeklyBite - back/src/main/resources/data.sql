@@ -33,7 +33,9 @@ INSERT INTO ingredient (id, name, quantity, unit) VALUES
 INSERT INTO recipe (id, created, updated, name, content, description, duration, number_of_people, category, is_deleted, admin_id)
 VALUES
     (1, CURRENT_DATE, CURRENT_DATE, 'Pita sa sirom', 'Domaća pita sa sirom i jajima', '', 60, 4, 'BREAKFAST', FALSE, 1),
-    (2, CURRENT_DATE, CURRENT_DATE, 'Kolač sa jagodama', 'Slatki desert sa jagodama i šlagom', '', 90, 6, 'DESSERT', FALSE, 2);
+    (2, CURRENT_DATE, CURRENT_DATE, 'Kolač sa jagodama', 'Slatki desert sa jagodama i šlagom', '', 90, 6, 'DESSERT', FALSE, 2),
+    (3, CURRENT_DATE, CURRENT_DATE, 'Kolač sa sljivama', 'Slatki desert sa sljivama i šlagom', '', 120, 4, 'DESSERT', FALSE, 2),
+    (4, CURRENT_DATE, CURRENT_DATE, 'Kolač sa makom', 'Slatki desert sa makom i šlagom', '', 130, 3, 'DESSERT', FALSE, 2);
 
 -- Recept 1: Pita sa sirom
 INSERT INTO recipe_ingredient (recipe_id, ingredient_id) VALUES
@@ -51,7 +53,9 @@ INSERT INTO recipe_ingredient (recipe_id, ingredient_id) VALUES
 INSERT INTO recipe_pictures (recipe_id, picture_path) VALUES
     (1, 'pita.png'),
     (1, 'pita2.jpg'),
-    (2, 'kolac.jpg');
+    (2, 'kolac.jpg'),
+    (3, 'kolac.jpg'),
+    (4, 'kolac.jpg');
 
 
 SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
