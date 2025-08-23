@@ -1,19 +1,28 @@
 package com.backend.weeklybite.controller;
 
 import com.backend.weeklybite.domain.PagedResponse;
+import com.backend.weeklybite.domain.Recipe;
+import com.backend.weeklybite.domain.UserAccount;
 import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
+import com.backend.weeklybite.dto.recipe.RecipeFilterDTO;
+import com.backend.weeklybite.exception.UserNotFoundException;
+import com.backend.weeklybite.service.AuthService;
 import com.backend.weeklybite.service.FileStorageService;
 import com.backend.weeklybite.service.RecipeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin(origins="*")
@@ -22,6 +31,9 @@ public class RecipeController {
 
     @Autowired
     private RecipeService recipeService;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -42,5 +54,42 @@ public class RecipeController {
         Page<GetRecipeDTO> recipes = recipeService.getAllRecipes(pageable);
         PagedResponse<GetRecipeDTO> pagedCategoriesDTO = new PagedResponse<>(recipes.getContent(), (int) Math.ceil((double) count / pageable.getPageSize()), count);
         return new ResponseEntity<>(pagedCategoriesDTO, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<GetRecipeDTO>> filterServices(
+            @ModelAttribute RecipeFilterDTO filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        Sort sort = Sort.unsorted();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Long currentUserId = -1L;
+        List<Long> blockedUserIds = null;
+
+        try {
+            UserAccount userAccount = authService.getAuthenticatedUserAccount();
+            currentUserId = userAccount.getId();
+        } catch (UsernameNotFoundException | UserNotFoundException e) {
+            // blockedUserIds is null
+        }
+
+        Page<Recipe> services = recipeService.filterRecipes(filter, pageable);
+
+        // Page<Service> services = serviceService.filterServices(filter, pageable);
+        Page<GetRecipeDTO> dtoPage = services.map(service -> {
+            GetRecipeDTO dto = modelMapper.map(service, GetRecipeDTO.class);
+            if (service.getPictures() != null && !service.getPictures().isEmpty()) {
+                List<String> urls = service.getPictures().stream()
+                        .map(fileStorageService::getFileUrl)
+                        .collect(Collectors.toList());
+                dto.setPictures(urls);
+            } else {
+                dto.setPictures(null);
+            }
+            return dto;
+        });
+
+        return ResponseEntity.ok(dtoPage);
     }
 }
