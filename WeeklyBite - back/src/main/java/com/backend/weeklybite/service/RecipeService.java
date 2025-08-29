@@ -1,11 +1,12 @@
 package com.backend.weeklybite.service;
 
 import com.backend.weeklybite.domain.Recipe;
-import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
-import com.backend.weeklybite.dto.recipe.RecipeFilterDTO;
+import com.backend.weeklybite.domain.UserAccount;
+import com.backend.weeklybite.dto.recipe.*;
 import com.backend.weeklybite.repository.RecipeRepository;
 import com.backend.weeklybite.service.interfaces.IRecipeService;
 import com.backend.weeklybite.specification.RecipeSpecification;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +29,9 @@ public class RecipeService implements IRecipeService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -50,17 +57,15 @@ public class RecipeService implements IRecipeService {
     }
 
     public Page<GetRecipeDTO> getAllRecipes(Pageable pageable) {
-
-        Page<Recipe> servicesPage = allRecipes.findAllByIsDeletedOrderByUpdatedAsc(
-                pageable,
-                false
+        Page<Recipe> recipesPage = allRecipes.findAllLast(
+                pageable
         );
 
-        return servicesPage.map(recipe -> {
-            GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+        return recipesPage.map(service -> {
+            GetRecipeDTO dto = modelMapper.map(service, GetRecipeDTO.class);
 
-            if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
-                List<String> urls = recipe.getPictures().stream()
+            if (service.getPictures() != null && !service.getPictures().isEmpty()) {
+                List<String> urls = service.getPictures().stream()
                         .map(fileStorageService::getFileUrl)
                         .collect(Collectors.toList());
                 dto.setPictures(urls);
@@ -79,6 +84,73 @@ public class RecipeService implements IRecipeService {
     public Page<Recipe> filterRecipes(RecipeFilterDTO filter, Pageable pageable) {
         Specification<Recipe> specification = new RecipeSpecification(filter);
         return allRecipes.findAll(specification, pageable);
+    }
+
+    public CreatedRecipeDTO create( CreateRecipeDTO createRecipeDTO, MultipartFile[] pictureFiles) {
+
+        Recipe recipe = new Recipe();
+
+        recipe.setName(createRecipeDTO.getName());
+        recipe.setDescription(createRecipeDTO.getDescription());
+        recipe.setContent(createRecipeDTO.getContent());
+        recipe.setCategory(createRecipeDTO.getCategory());
+        recipe.setDuration(createRecipeDTO.getDuration());
+        recipe.setNumberOfPeople(createRecipeDTO.getNumberOfPeople());
+
+        recipe.setCreated(LocalDate.now());
+        recipe.setIsDeleted(false);
+        recipe.setUpdated(LocalDate.now());
+
+        List<String> storedAgencyPictureNames = new ArrayList<>();
+        if (pictureFiles != null && pictureFiles.length > 0) {
+            for (MultipartFile file : pictureFiles) {
+                if (!file.isEmpty()) {
+                    String fileName = fileStorageService.storeFile(file);
+                    storedAgencyPictureNames.add(fileName);
+                }
+            }
+        }
+        recipe.setPictures(storedAgencyPictureNames);
+
+        UserAccount admin = authService.getAuthenticatedUserAccount();
+        recipe.setAdmin(admin);
+
+        Recipe createdRecipe = allRecipes.save(recipe);
+
+        CreatedRecipeDTO createdRecipeDTO = modelMapper.map(createdRecipe, CreatedRecipeDTO.class);
+        return createdRecipeDTO;
+    }
+
+    public UpdatedRecipeDTO update(Long id, @Valid UpdateRecipeDTO updateRecipeDTO, MultipartFile[] pictureFiles) {
+
+
+        Recipe recipe = new Recipe();
+
+        recipe.setName(updateRecipeDTO.getName());
+        recipe.setDescription(updateRecipeDTO.getDescription());
+        recipe.setContent(updateRecipeDTO.getContent());
+        recipe.setCategory(updateRecipeDTO.getCategory());
+        recipe.setDuration(updateRecipeDTO.getDuration());
+        recipe.setNumberOfPeople(updateRecipeDTO.getNumberOfPeople());
+
+        recipe.setIsDeleted(true);
+        recipe.setUpdated(LocalDate.now());
+
+        List<String> storedAgencyPictureNames = new ArrayList<>();
+        if (pictureFiles != null && pictureFiles.length > 0) {
+            for (MultipartFile file : pictureFiles) {
+                if (!file.isEmpty()) {
+                    String fileName = fileStorageService.storeFile(file);
+                    storedAgencyPictureNames.add(fileName);
+                }
+            }
+        }
+        recipe.setPictures(storedAgencyPictureNames);
+
+        Recipe updatedRecipe = allRecipes.save(recipe);
+
+        UpdatedRecipeDTO updatedRecipeDTO = modelMapper.map(updatedRecipe, UpdatedRecipeDTO.class);
+        return updatedRecipeDTO;
     }
 }
 

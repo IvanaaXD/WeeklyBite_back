@@ -12,6 +12,4 @@ public interface RecipeRepository   extends JpaRepository<Recipe, Long>, JpaSpec
     @Query("SELECT r From Recipe r WHERE r.isDeleted = false")
     Page<Recipe> findAllLast(Pageable pageable);
 
-    Page<Recipe> findAllByIsDeletedOrderByUpdatedAsc(Pageable pageable, boolean b);
-
 }

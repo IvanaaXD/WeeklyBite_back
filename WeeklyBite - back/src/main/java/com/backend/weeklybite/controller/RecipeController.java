@@ -3,8 +3,7 @@ package com.backend.weeklybite.controller;
 import com.backend.weeklybite.domain.PagedResponse;
 import com.backend.weeklybite.domain.Recipe;
 import com.backend.weeklybite.domain.UserAccount;
-import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
-import com.backend.weeklybite.dto.recipe.RecipeFilterDTO;
+import com.backend.weeklybite.dto.recipe.*;
 import com.backend.weeklybite.exception.UserNotFoundException;
 import com.backend.weeklybite.service.AuthService;
 import com.backend.weeklybite.service.FileStorageService;
@@ -18,9 +17,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,5 +93,21 @@ public class RecipeController {
         });
 
         return ResponseEntity.ok(dtoPage);
+    }
+
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<CreatedRecipeDTO> create( @RequestPart("recipe") CreateRecipeDTO recipe,
+                                                   @RequestPart(value = "pictures", required = false) MultipartFile[] pictureFiles) throws IOException {
+        CreatedRecipeDTO savedRecipe = recipeService.create(recipe, pictureFiles);
+        return new ResponseEntity<CreatedRecipeDTO>(savedRecipe, HttpStatus.CREATED);
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<UpdatedRecipeDTO> update( @RequestPart("service") UpdateRecipeDTO recipe, @PathVariable Long id,
+                                                   @RequestPart(value = "pictures", required = false) MultipartFile[] pictureFiles) throws Exception {
+        UpdatedRecipeDTO updatedRecipe = recipeService.update(id, recipe, pictureFiles);
+        return new ResponseEntity<UpdatedRecipeDTO>(updatedRecipe, HttpStatus.OK);
     }
 }
