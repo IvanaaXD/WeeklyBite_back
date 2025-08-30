@@ -43,6 +43,12 @@ public class RecipeController {
     @Autowired
     private ModelMapper modelMapper;
 
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GetRecipeDTO> getRecipeById(@PathVariable("id") Long id) {
+        GetRecipeDTO recipeDTO = recipeService.getRecipeById(id);
+        return new ResponseEntity<GetRecipeDTO>(recipeDTO, HttpStatus.OK);
+    }
+
     @GetMapping(path = "/top-five", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetRecipeDTO>> getTopEvents() {
         List<GetRecipeDTO> topEvents = recipeService.getTopFiveRecipes();

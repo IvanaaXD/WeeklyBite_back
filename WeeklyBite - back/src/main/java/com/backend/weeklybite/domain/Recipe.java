@@ -1,5 +1,6 @@
 package com.backend.weeklybite.domain;
 
+import com.backend.weeklybite.converter.StepListConverter;
 import com.backend.weeklybite.domain.enums.RecipeCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,6 @@ public class Recipe {
     private LocalDate updated;
     private String name;
     private String content;
-    private String description;
     private Integer duration;
     private Integer numberOfPeople;
 
@@ -37,6 +37,10 @@ public class Recipe {
     private Boolean isDeleted;
 
     // Relationships
+
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = StepListConverter.class)
+    private List<Step> description;
 
     @ManyToOne
     @JoinColumn(name = "admin_id")

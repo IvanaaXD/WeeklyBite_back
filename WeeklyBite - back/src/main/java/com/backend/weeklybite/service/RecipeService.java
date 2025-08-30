@@ -6,6 +6,7 @@ import com.backend.weeklybite.dto.recipe.*;
 import com.backend.weeklybite.repository.RecipeRepository;
 import com.backend.weeklybite.service.interfaces.IRecipeService;
 import com.backend.weeklybite.specification.RecipeSpecification;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,5 +153,22 @@ public class RecipeService implements IRecipeService {
         UpdatedRecipeDTO updatedRecipeDTO = modelMapper.map(updatedRecipe, UpdatedRecipeDTO.class);
         return updatedRecipeDTO;
     }
-}
+
+    public GetRecipeDTO getRecipeById(Long id) {
+        Recipe recipe = allRecipes.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + id + " not found"));
+
+        GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+
+        if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
+            List<String> urls = recipe.getPictures().stream()
+                    .map(fileStorageService::getFileUrl)
+                    .collect(Collectors.toList());
+            dto.setPictures(urls);
+        } else {
+            dto.setPictures(null);
+        }
+
+        return dto;
+    }}
 

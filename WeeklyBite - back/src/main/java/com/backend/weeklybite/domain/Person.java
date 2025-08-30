@@ -34,4 +34,16 @@ public abstract class Person {
         this.profilePicture = profilePicture;
         this.birthLocation = birthLocation;
     }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber=" + phoneNumber +
+                ", profilePicture='" + profilePicture + '\'' +
+                ", birthLocation=" + birthLocation +
+                ", userAccount=" + userAccount +
+                '}';
+    }
 }

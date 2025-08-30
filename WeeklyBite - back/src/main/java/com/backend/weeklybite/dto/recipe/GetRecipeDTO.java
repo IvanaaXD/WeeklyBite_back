@@ -1,6 +1,7 @@
 package com.backend.weeklybite.dto.recipe;
 
 import com.backend.weeklybite.domain.Recipe;
+import com.backend.weeklybite.domain.Step;
 import com.backend.weeklybite.domain.enums.RecipeCategory;
 import com.backend.weeklybite.dto.ingredient.GetIngredientDTO;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ public class GetRecipeDTO {
     private LocalDate created;
     private LocalDate updated;
     private String name;
-    private String description;
+    private List<Step> description;
     private Integer duration;
     private String content;
     private Integer numberOfPeople;
