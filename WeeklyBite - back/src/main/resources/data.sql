@@ -23,6 +23,9 @@ VALUES
     (9, 'Stefan', 'Stefanović', '+3816554890', 'https://example.com/profiles/stefan.jpg', 9, 'Beograd, Serbia');
 
 
+INSERT INTO admin (id) VALUES (1), (2);
+INSERT INTO authenticated_user VALUES (3), (4), (5), (6);
+
 INSERT INTO ingredient (id, name, quantity, unit) VALUES
     (1, 'Paradajz', 5, 'kom'),
     (2, 'Šećer', 4, 'kašika'),
@@ -30,12 +33,26 @@ INSERT INTO ingredient (id, name, quantity, unit) VALUES
     (4, 'Mleko', 200, 'ml'),
     (5, 'Jaja', 3, 'kom');
 
+ALTER TABLE recipe ALTER COLUMN description TYPE TEXT;
 INSERT INTO recipe (id, created, updated, name, content, description, duration, number_of_people, category, is_deleted, admin_id)
 VALUES
-    (1, CURRENT_DATE, CURRENT_DATE, 'Pita sa sirom', 'Domaća pita sa sirom i jajima', '', 60, 4, 'BREAKFAST', FALSE, 1),
-    (2, CURRENT_DATE, CURRENT_DATE, 'Kolač sa jagodama', 'Slatki desert sa jagodama i šlagom', '', 90, 6, 'DESSERT', FALSE, 2),
-    (3, CURRENT_DATE, CURRENT_DATE, 'Kolač sa sljivama', 'Slatki desert sa sljivama i šlagom', '', 120, 4, 'DESSERT', FALSE, 2),
-    (4, CURRENT_DATE, CURRENT_DATE, 'Kolač sa makom', 'Slatki desert sa makom i šlagom', '', 130, 3, 'DESSERT', FALSE, 2);
+    (1, CURRENT_DATE, CURRENT_DATE, 'Pita sa sirom', 'Domaća pita sa sirom i jajima',
+      '[{"name": "t", "description": "tt"}, {"name": "x", "description": "y z"}]',
+      60, 4, 'BREAKFAST', FALSE, 1
+    ),
+    (2, CURRENT_DATE, CURRENT_DATE, 'Kolač sa jagodama', 'Slatki desert sa jagodama i šlagom',
+      '[{"name": "t", "description": "rr"}, {"name": "x", "description": "y"}]',
+      90, 6, 'DESSERT', FALSE, 2
+    ),
+    (3, CURRENT_DATE, CURRENT_DATE, 'Kolač sa šljivama', 'Slatki desert sa šljivama i šlagom',
+      '[{"name": "t", "description": "rr"}, {"name": "aa", "description": "bb"}]',
+      120, 4, 'DESSERT', FALSE, 2
+    ),
+    (4, CURRENT_DATE, CURRENT_DATE, 'Kolač sa makom', 'Slatki desert sa makom i šlagom',
+      '[{"name": "t", "description": "rr"}, {"name": "cc", "description": "dd"}]',
+      130, 3, 'DESSERT', FALSE, 2
+    );
+
 
 -- Recept 1: Pita sa sirom
 INSERT INTO recipe_ingredient (recipe_id, ingredient_id) VALUES

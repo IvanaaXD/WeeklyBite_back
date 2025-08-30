@@ -1,12 +1,10 @@
 package com.backend.weeklybite.specification;
 
 import com.backend.weeklybite.domain.Recipe;
+import com.backend.weeklybite.domain.Step;
 import com.backend.weeklybite.domain.enums.RecipeCategory;
 import com.backend.weeklybite.dto.recipe.RecipeFilterDTO;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -28,8 +26,30 @@ public class RecipeSpecification implements Specification<Recipe> {
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + dto.getName().toLowerCase() + "%"));
         }
 
-        if (dto.getDescription() != null && !dto.getDescription().isBlank()) {
-            predicates.add(cb.like(cb.lower(root.get("description")), "%" + dto.getDescription().toLowerCase() + "%"));
+        if (dto.getDescription() != null && !dto.getDescription().isEmpty()) {
+            Join<Object, Step> stepsJoin = root.join("description", JoinType.LEFT);
+            List<Predicate> stepPredicates = new ArrayList<>();
+
+            for (Step stepFilter : dto.getDescription()) {
+                String nameSearch = stepFilter.getName() != null ? "%" + stepFilter.getName().toLowerCase() + "%" : null;
+                String descSearch = stepFilter.getDescription() != null ? "%" + stepFilter.getDescription().toLowerCase() + "%" : null;
+
+                List<Predicate> innerPredicates = new ArrayList<>();
+                if (nameSearch != null) {
+                    innerPredicates.add(cb.like(cb.lower(stepsJoin.get("name")), nameSearch));
+                }
+                if (descSearch != null) {
+                    innerPredicates.add(cb.like(cb.lower(stepsJoin.get("description")), descSearch));
+                }
+
+                if (!innerPredicates.isEmpty()) {
+                    stepPredicates.add(cb.or(innerPredicates.toArray(new Predicate[0])));
+                }
+            }
+
+            if (!stepPredicates.isEmpty()) {
+                predicates.add(cb.or(stepPredicates.toArray(new Predicate[0])));
+            }
         }
 
         if (dto.getContent() != null && !dto.getContent().isBlank()) {
