@@ -1,13 +1,15 @@
 package com.backend.weeklybite.service;
 
+import com.backend.weeklybite.domain.Ingredient;
 import com.backend.weeklybite.domain.Recipe;
 import com.backend.weeklybite.domain.UserAccount;
+import com.backend.weeklybite.dto.ingredient.GetIngredientDTO;
 import com.backend.weeklybite.dto.recipe.*;
+import com.backend.weeklybite.repository.IngredientRepository;
 import com.backend.weeklybite.repository.RecipeRepository;
 import com.backend.weeklybite.service.interfaces.IRecipeService;
 import com.backend.weeklybite.specification.RecipeSpecification;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,6 +29,9 @@ public class RecipeService implements IRecipeService {
 
     @Autowired
     private RecipeRepository allRecipes;
+
+    @Autowired
+    private IngredientRepository allIngredients;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -116,42 +121,75 @@ public class RecipeService implements IRecipeService {
         UserAccount admin = authService.getAuthenticatedUserAccount();
         recipe.setAdmin(admin);
 
+        List<GetIngredientDTO> ingredientIds = createRecipeDTO.getProducts();
+        List<Ingredient> ingredients = new ArrayList<>();
+        for (GetIngredientDTO dto : ingredientIds) {
+            allIngredients.findById(dto.getId()).ifPresent(ingredients::add);
+        }
+        recipe.setProducts(ingredients);
+
         Recipe createdRecipe = allRecipes.save(recipe);
 
         CreatedRecipeDTO createdRecipeDTO = modelMapper.map(createdRecipe, CreatedRecipeDTO.class);
         return createdRecipeDTO;
     }
 
-    public UpdatedRecipeDTO update(Long id, @Valid UpdateRecipeDTO updateRecipeDTO, MultipartFile[] pictureFiles) {
+    public UpdatedRecipeDTO update(Long id, UpdateRecipeDTO updateRecipeDTO, MultipartFile[] pictureFiles) {
 
+        Recipe existingRecipe = allRecipes.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + id + " not found"));
 
-        Recipe recipe = new Recipe();
+        existingRecipe.setIsDeleted(true);
+        allRecipes.save(existingRecipe);
 
-        recipe.setName(updateRecipeDTO.getName());
-        recipe.setDescription(updateRecipeDTO.getDescription());
-        recipe.setContent(updateRecipeDTO.getContent());
-        recipe.setCategory(updateRecipeDTO.getCategory());
-        recipe.setDuration(updateRecipeDTO.getDuration());
-        recipe.setNumberOfPeople(updateRecipeDTO.getNumberOfPeople());
+        Recipe updateRecipe = new Recipe();
 
-        recipe.setIsDeleted(true);
-        recipe.setUpdated(LocalDate.now());
+        updateRecipe.setName(updateRecipeDTO.getName() != null
+                ? updateRecipeDTO.getName()
+                : existingRecipe.getName());
+        updateRecipe.setDescription(updateRecipeDTO.getDescription() != null
+                ? updateRecipeDTO.getDescription()
+                : existingRecipe.getDescription());
+        updateRecipe.setContent(updateRecipeDTO.getContent() != null
+                ? updateRecipeDTO.getContent()
+                : existingRecipe.getContent());
+        updateRecipe.setDuration(updateRecipeDTO.getDuration() != null
+                ? updateRecipeDTO.getDuration()
+                : existingRecipe.getDuration());
+        updateRecipe.setNumberOfPeople(updateRecipeDTO.getNumberOfPeople() != null
+                ? updateRecipeDTO.getNumberOfPeople()
+                : existingRecipe.getNumberOfPeople());
 
-        List<String> storedAgencyPictureNames = new ArrayList<>();
-        if (pictureFiles != null && pictureFiles.length > 0) {
+        updateRecipe.setIsDeleted(false);
+        updateRecipe.setUpdated(LocalDate.now());
+        updateRecipe.setCreated(LocalDate.now());
+        updateRecipe.setCategory(updateRecipeDTO.getCategory());
+        updateRecipe.setAdmin(existingRecipe.getAdmin());
+
+        List<String> storedPictureNames = new ArrayList<>();
+        boolean newPicturesProvided = (pictureFiles != null && pictureFiles.length > 0 && !pictureFiles[0].isEmpty());
+
+        if (newPicturesProvided) {
             for (MultipartFile file : pictureFiles) {
                 if (!file.isEmpty()) {
                     String fileName = fileStorageService.storeFile(file);
-                    storedAgencyPictureNames.add(fileName);
+                    storedPictureNames.add(fileName);
                 }
             }
+        } else {
+            storedPictureNames.addAll(existingRecipe.getPictures());
         }
-        recipe.setPictures(storedAgencyPictureNames);
+        updateRecipe.setPictures(storedPictureNames);
 
-        Recipe updatedRecipe = allRecipes.save(recipe);
+        List<GetIngredientDTO> ingredientIds = updateRecipeDTO.getProducts();
+        List<Ingredient> ingredients = new ArrayList<>();
+        for (GetIngredientDTO dto : ingredientIds) {
+            allIngredients.findById(dto.getId()).ifPresent(ingredients::add);
+        }
+        updateRecipe.setProducts(ingredients);
 
-        UpdatedRecipeDTO updatedRecipeDTO = modelMapper.map(updatedRecipe, UpdatedRecipeDTO.class);
-        return updatedRecipeDTO;
+        Recipe updatedRecipe = allRecipes.save(updateRecipe);
+        return modelMapper.map(updatedRecipe, UpdatedRecipeDTO.class);
     }
 
     public GetRecipeDTO getRecipeById(Long id) {

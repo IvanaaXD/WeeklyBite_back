@@ -43,7 +43,7 @@ public class CommentService implements ICommentService {
 
     @Override
     public List<GetCommentDTO> getAll() {
-        List<Comment> comments = allComments.findAll();
+        List<Comment> comments = allComments.findAllPending();
 
         return comments.stream()
                 .map(this::mapToDTO)

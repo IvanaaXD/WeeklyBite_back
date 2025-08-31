@@ -109,10 +109,10 @@ public class RecipeController {
         return new ResponseEntity<CreatedRecipeDTO>(savedRecipe, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<UpdatedRecipeDTO> update( @RequestPart("service") UpdateRecipeDTO recipe, @PathVariable Long id,
-                                                   @RequestPart(value = "pictures", required = false) MultipartFile[] pictureFiles) throws Exception {
+    public ResponseEntity<UpdatedRecipeDTO> update( @RequestPart("recipe") UpdateRecipeDTO recipe,
+                                                    @RequestPart(value = "pictures", required = false) MultipartFile[] pictureFiles, @PathVariable Long id) throws Exception {
         UpdatedRecipeDTO updatedRecipe = recipeService.update(id, recipe, pictureFiles);
         return new ResponseEntity<UpdatedRecipeDTO>(updatedRecipe, HttpStatus.OK);
     }
