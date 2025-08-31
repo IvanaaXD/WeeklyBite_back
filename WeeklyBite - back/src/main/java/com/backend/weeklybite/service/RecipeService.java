@@ -42,6 +42,24 @@ public class RecipeService implements IRecipeService {
     @Autowired
     private FileStorageService fileStorageService;
 
+    public GetRecipeDTO getRecipeById(Long id) {
+        Recipe recipe = allRecipes.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + id + " not found"));
+
+        GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+
+        if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
+            List<String> urls = recipe.getPictures().stream()
+                    .map(fileStorageService::getFileUrl)
+                    .collect(Collectors.toList());
+            dto.setPictures(urls);
+        } else {
+            dto.setPictures(null);
+        }
+
+        return dto;
+    }
+
     public List<GetRecipeDTO> getTopFiveRecipes() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<Recipe> recipes = allRecipes.findAllLast(pageable);
@@ -192,21 +210,12 @@ public class RecipeService implements IRecipeService {
         return modelMapper.map(updatedRecipe, UpdatedRecipeDTO.class);
     }
 
-    public GetRecipeDTO getRecipeById(Long id) {
-        Recipe recipe = allRecipes.findById(id)
+    public void delete(Long id) {
+        Recipe recipe = allRecipes.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + id + " not found"));
 
-        GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
-
-        if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
-            List<String> urls = recipe.getPictures().stream()
-                    .map(fileStorageService::getFileUrl)
-                    .collect(Collectors.toList());
-            dto.setPictures(urls);
-        } else {
-            dto.setPictures(null);
-        }
-
-        return dto;
-    }}
+        recipe.setIsDeleted(true);
+        allRecipes.save(recipe);
+    }
+}
 

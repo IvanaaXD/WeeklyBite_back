@@ -116,4 +116,11 @@ public class RecipeController {
         UpdatedRecipeDTO updatedRecipe = recipeService.update(id, recipe, pictureFiles);
         return new ResponseEntity<UpdatedRecipeDTO>(updatedRecipe, HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        recipeService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
