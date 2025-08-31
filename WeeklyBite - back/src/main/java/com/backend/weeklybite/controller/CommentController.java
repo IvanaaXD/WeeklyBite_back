@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 @RestController
@@ -31,8 +30,7 @@ public class CommentController {
 
     @GetMapping(produces = "application/json")
     public ResponseEntity<Collection<GetCommentDTO>> getAllComments() {
-        Collection<GetCommentDTO> comments = new ArrayList<>();
-        comments =  commentService.getAll();
+        Collection<GetCommentDTO> comments = commentService.getAll();
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 

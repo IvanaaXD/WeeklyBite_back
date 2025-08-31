@@ -2,13 +2,16 @@ package com.backend.weeklybite.service;
 
 import com.backend.weeklybite.domain.ActivationToken;
 import com.backend.weeklybite.domain.Person;
+import com.backend.weeklybite.domain.Recipe;
 import com.backend.weeklybite.domain.UserAccount;
 import com.backend.weeklybite.domain.enums.AccountStatus;
 import com.backend.weeklybite.domain.enums.Role;
 import com.backend.weeklybite.dto.account.*;
+import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
 import com.backend.weeklybite.repository.AccountRepository;
 import com.backend.weeklybite.repository.ActivationTokenRepository;
 import com.backend.weeklybite.repository.PersonRepository;
+import com.backend.weeklybite.repository.RecipeRepository;
 import com.backend.weeklybite.service.interfaces.IAccountService;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
@@ -20,7 +23,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountService implements IAccountService, UserDetailsService {
@@ -30,6 +36,9 @@ public class AccountService implements IAccountService, UserDetailsService {
 
     @Autowired
     private PersonRepository allUsers;
+
+    @Autowired
+    private RecipeRepository allRecipes;
 
     @Autowired
     private AuthService authService;
@@ -153,5 +162,42 @@ public class AccountService implements IAccountService, UserDetailsService {
         UserAccount product = allAccounts.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found"));
         return modelMapper.map(product, GetAccountDTO.class);
+    }
+
+    public void addFavouriteRecipes(Long accountId, Long recipeId) {
+        UserAccount userAccount = allAccounts.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("UserAccount with id " + accountId + " not found"));
+
+        Recipe recipe = allRecipes.findById(recipeId)
+                .orElseThrow(() -> new EntityNotFoundException("Recipe with id " + recipeId + " not found"));
+
+        if (!userAccount.getFavoriteRecipes().contains(recipe)) {
+            userAccount.getFavoriteRecipes().add(recipe);
+            allAccounts.save(userAccount);
+        } else {
+            throw new IllegalArgumentException("Service is already in the favorites list");
+        }
+    }
+
+    @Override
+    public Collection<GetRecipeDTO> getFavoriteRecipes() {
+        UserAccount userAccount = authService.getAuthenticatedUserAccount();
+
+        return userAccount.getFavoriteRecipes().stream()
+                .map(recipe -> {
+                    GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+
+                    if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
+                        List<String> urls = recipe.getPictures().stream()
+                                .map(fileStorageService::getFileUrl)
+                                .collect(Collectors.toList());
+                        dto.setPictures(urls);
+                    } else {
+                        dto.setPictures(null);
+                    }
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }

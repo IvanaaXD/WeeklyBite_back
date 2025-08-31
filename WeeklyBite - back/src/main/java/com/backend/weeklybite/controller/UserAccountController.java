@@ -1,14 +1,18 @@
 package com.backend.weeklybite.controller;
 
 import com.backend.weeklybite.dto.account.*;
+import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
 import com.backend.weeklybite.service.AccountService;
 import com.backend.weeklybite.service.AuthService;
+import com.backend.weeklybite.service.RecipeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -20,6 +24,9 @@ public class UserAccountController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private RecipeService recipeService;
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetAccountDTO> getAccount(@PathVariable("id") Long id) {
@@ -59,25 +66,21 @@ public class UserAccountController {
         return new ResponseEntity<GetAccountDTO>(account, HttpStatus.OK);
     }
 
-//    @GetMapping("/activate")
-//    public ResponseEntity<String> activateAccount(@RequestParam("token") String token) {
-//        try {
-//            accountService.verificateAccount(token);
-//            return ResponseEntity.ok("Account successfully activated!");
-//        } catch (Exception e) {
-//            return ResponseEntity.badRequest().body("Invalid or expired token.");
-//        }
-//    }
+    @PostMapping("/favorites/{recipeId}")
+    public ResponseEntity<GetRecipeDTO> addFavoriteRecipe(
+            @PathVariable Long recipeId) {
+        Long accountId = authService.getAuthenticatedUserAccount().getId();
+        accountService.addFavouriteRecipes(accountId, recipeId);
+        GetRecipeDTO recipe = recipeService.getRecipeById(recipeId);
+        return new ResponseEntity<GetRecipeDTO>(recipe, HttpStatus.OK);
+    }
 
-
-//    @PostMapping("/{accountId}/favorites/{recipeId}")
-//    public ResponseEntity<GetRecipeDTO> addFavoriteRecipe(
-//            @PathVariable Long accountId,
-//            @PathVariable Long serviceId) {
-//        accountService.addFavouriteRecipes(accountId, recipeId);
-//        GetRecipeDTO service = recipeService.getRecipeById(serviceId);
-//        return new ResponseEntity<GetRecipeDTO>(service, HttpStatus.OK);
-//    }
+    @GetMapping("/favorites/recipes")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<GetRecipeDTO>> getFavoriteRecipes() {
+        List<GetRecipeDTO> favoriteRecipes = accountService.getFavoriteRecipes().stream().toList();
+        return ResponseEntity.ok(favoriteRecipes);
+    }
 
     @GetMapping("/activate")
     public ResponseEntity<String> activateAccount(@RequestParam("token") String token) {
