@@ -9,8 +9,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CreateIngredientDTO {
+public class IngredientWithQuantityDTO {
     private String name;
-    private Double quantity;
     private String unit;
+    private Double quantity;
 }

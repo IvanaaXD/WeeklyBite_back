@@ -6,6 +6,7 @@ import com.backend.weeklybite.dto.account.LoginDTO;
 import com.backend.weeklybite.dto.account.LoginResponseDTO;
 import com.backend.weeklybite.security.jwt.JwtTokenUtil;
 import com.backend.weeklybite.service.AccountService;
+import com.backend.weeklybite.service.WeekService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,6 +29,9 @@ public class LoginController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private WeekService weekService;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -56,6 +60,8 @@ public class LoginController {
         response.setJwt(token);
         response.setEmail(user.getEmail());
         response.setRole(roles.isEmpty() ? null : roles.get(0));
+
+        weekService.checkWeeks();
 
         return response;
     }

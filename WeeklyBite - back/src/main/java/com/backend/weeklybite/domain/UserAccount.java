@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,4 +41,14 @@ public class UserAccount {
             inverseJoinColumns = @JoinColumn(name = "recipe_id"))
     private Collection<Recipe> favoriteRecipes;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Week> weeks;
+
+    @OneToOne
+    @JoinColumn(name = "current_week_id")
+    private Week currentWeek;
+
+    @OneToOne
+    @JoinColumn(name = "next_week_id")
+    private Week nextWeek;
 }

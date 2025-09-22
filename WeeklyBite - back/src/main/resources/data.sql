@@ -75,8 +75,27 @@ INSERT INTO recipe_pictures (recipe_id, picture_path) VALUES
     (4, 'kolac.jpg');
 
 
+INSERT INTO week (start_date, end_date, user_id)
+VALUES ('2025-09-22', '2025-09-28', 6);
+
+INSERT INTO week_day (day, week_id) VALUES
+('MONDAY', 1),
+('TUESDAY', 1),
+('WEDNESDAY', 1),
+('THURSDAY', 1),
+('FRIDAY', 1),
+('SATURDAY', 1),
+('SUNDAY', 1);
+
+INSERT INTO week_day_recipes (week_day_id, recipe_id) VALUES
+(1, 1),
+(2, 2);
+
+
 SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));
 SELECT setval('person_id_seq', (SELECT MAX(id) FROM person));
 SELECT setval('comment_id_seq', (SELECT MAX(id) FROM comment));
 SELECT setval('recipe_id_seq', (SELECT MAX(id) FROM recipe));
 SELECT setval('ingredient_id_seq', (SELECT MAX(id) FROM ingredient));
+SELECT setval('week_id_seq', (SELECT MAX(id) FROM week));
+SELECT setval('week_day_id_seq', (SELECT MAX(id) FROM week_day));

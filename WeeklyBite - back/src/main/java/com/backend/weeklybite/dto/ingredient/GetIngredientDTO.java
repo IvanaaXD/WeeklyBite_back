@@ -14,7 +14,7 @@ public class GetIngredientDTO {
 
     private Long id;
     private String name;
-    private Integer quantity;
+    private Double quantity;
     private String unit;
 
     public GetIngredientDTO(Ingredient product) {

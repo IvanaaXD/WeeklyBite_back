@@ -21,6 +21,6 @@ public class Ingredient {
     private Long id;
 
     private String name;
-    private Integer quantity;
+    private Double quantity;
     private String unit;
 }

@@ -148,8 +148,7 @@ public class RecipeService implements IRecipeService {
 
         Recipe createdRecipe = allRecipes.save(recipe);
 
-        CreatedRecipeDTO createdRecipeDTO = modelMapper.map(createdRecipe, CreatedRecipeDTO.class);
-        return createdRecipeDTO;
+        return modelMapper.map(createdRecipe, CreatedRecipeDTO.class);
     }
 
     public UpdatedRecipeDTO update(Long id, UpdateRecipeDTO updateRecipeDTO, MultipartFile[] pictureFiles) {
