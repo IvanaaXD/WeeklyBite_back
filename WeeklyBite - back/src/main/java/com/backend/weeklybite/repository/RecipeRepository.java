@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface RecipeRepository   extends JpaRepository<Recipe, Long>, JpaSpecificationExecutor<Recipe> {
+public interface RecipeRepository extends JpaRepository<Recipe, Long>, JpaSpecificationExecutor<Recipe> {
 
-    @Query("SELECT r From Recipe r WHERE r.isDeleted = false")
+    @Query("SELECT r From Recipe r WHERE r.isDeleted = false AND r.id != 0")
     Page<Recipe> findAllLast(Pageable pageable);
 
     Optional<Recipe> findByIdAndIsDeletedFalse(Long id);

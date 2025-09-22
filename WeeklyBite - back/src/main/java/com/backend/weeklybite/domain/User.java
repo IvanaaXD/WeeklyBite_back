@@ -1,10 +1,10 @@
 package com.backend.weeklybite.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Collection;
 
 @Getter
 @Setter
@@ -13,7 +13,4 @@ import java.util.Collection;
 @PrimaryKeyJoinColumn(name = "id")
 public class User extends Person {
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "user_id")
-    private Collection<Recipe> recipes;
 }

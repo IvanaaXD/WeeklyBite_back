@@ -72,8 +72,8 @@ public class RecipeSpecification implements Specification<Recipe> {
             predicates.add(cb.greaterThanOrEqualTo(root.get("duration"), dto.getDuration()));
         }
 
-        // Exclude deleted services
         predicates.add(cb.isFalse(root.get("isDeleted")));
+        predicates.add(cb.notEqual(root.get("id"), 0));
 
         if (Boolean.TRUE.equals(dto.getBreakfast()) ||
                 Boolean.TRUE.equals(dto.getLunch()) ||
