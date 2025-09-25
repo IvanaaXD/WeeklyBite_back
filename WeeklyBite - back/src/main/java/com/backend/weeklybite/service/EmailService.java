@@ -1,54 +1,95 @@
 package com.backend.weeklybite.service;
 
+import com.backend.weeklybite.domain.UserAccount;
+import com.backend.weeklybite.dto.ingredient.IngredientWithQuantityDTO;
+import com.backend.weeklybite.dto.recipe.GetRecipeDTO;
 import com.backend.weeklybite.service.interfaces.IEmailService;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EmailService implements IEmailService {
 
     @Autowired
+    private IngredientService ingredientService;
+
+    @Autowired
+    private PdfService pdfService;
+
+    @Autowired
+    private WeekService weekService;
+
+    @Autowired
     private JavaMailSender javaMailSender;
-    @Autowired private AuthService authService;
+
+    @Autowired
+    private AuthService authService;
 
     @Value("${spring.mail.username}") private String sender;
     @Value("${app.base-url}") private String appBaseUrl;
     @Value("${frontend.base-url}") private String frontendBaseUrl;
     @Value("${mobile.deep-link.scheme}") private String scheme;
 
-//    public ResponseEntity<String> sendEmailToEventOrganizer(EmailDetails details) {
-//
-//        try {
-//            SimpleMailMessage mailMessage = new SimpleMailMessage();
-//
-//            mailMessage.setFrom(sender);
-//            //mailMessage.setTo(details.getRecipient());
-//            mailMessage.setTo("diirrektorr@gmail.com");
-//
-//            String body = "Dear " + details.getRecipient() + ",\n\n"
-//                    + "You have successfully reserved the service for your event: " + details.getEventName() + ".\n"
-//                    + "Reservation details:\n"
-//                    + "Service: " + details.getServiceName() + "\n"
-//                    + "Date: " + details.getReservationDate() + "\n"
-//                    + "Start time: " + details.getStartTime() + "\n"
-//                    + "End time: " + details.getEndTime() + "\n\n"
-//                    + "Thank you for using our service!\n\n"
-//                    + "Best regards,\nYour team.";
-//
-//            mailMessage.setText(body);
-//            mailMessage.setSubject("EventaApp: Service Reservation Confirmation");
-//
-//            javaMailSender.send(mailMessage);
-//            return ResponseEntity.ok("{\"message\": \"Mail Sent Successfully to Event Organizer\"}");
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(500).body("{\"message\": \"Error while Sending Mail to Event Organizer: " + e.getMessage() + "\"}");
-//        }
-//    }
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Override
+    public String sendEmail() {
+        UserAccount currentUser = authService.getAuthenticatedUserAccount();
+        Collection<GetRecipeDTO> recipes = weekService.getCurrentWeekRecipes(currentUser.getId());
+        Collection<IngredientWithQuantityDTO> ingredients =
+                ingredientService.getIngredientsByWeekId(weekService.getCurrentWeekByUserId(currentUser.getId()).getId());
+
+        byte[] pdfRecipeBytes = pdfService.generateWeeklyRecipesPdf(recipes);
+        byte[] pdfIngredientBytes = pdfService.generateWeeklyIngredientsPdf(ingredients);
+
+        if (pdfRecipeBytes != null && pdfIngredientBytes != null) {
+            Map<String, byte[]> attachments = new HashMap<>();
+            attachments.put("weekly-recipes.pdf", pdfRecipeBytes);
+            attachments.put("weekly-ingredients.pdf", pdfIngredientBytes);
+
+            sendEmailWithAttachments(
+                    "Your weekly recipe plan",
+                    "Attached you will find your weekly recipe plan and ingredients list in PDF format.",
+                    attachments
+            );
+
+            return "The PDFs have been successfully sent to your email.";
+        } else {
+            return "An error occurred while generating the PDFs.";
+        }
+    }
+
+    public void sendEmailWithAttachments(String subject, String body, Map<String, byte[]> attachments) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(sender);
+            helper.setSubject(subject);
+            helper.setText(body);
+
+            for (Map.Entry<String, byte[]> entry : attachments.entrySet()) {
+                String filename = entry.getKey();
+                byte[] fileBytes = entry.getValue();
+                helper.addAttachment(filename, new ByteArrayResource(fileBytes));
+            }
+
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void sendActivationEmail(String recipientEmail, String recipientName, String activationToken) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
@@ -57,8 +98,6 @@ public class EmailService implements IEmailService {
         mailMessage.setTo(sender);
         mailMessage.setSubject("WeeklyBite: Activate Your Account");
 
-        // Construct the activation link
-        // This URL should point to your backend endpoint that handles activation
         String activationLink = appBaseUrl + "/api/accounts/activate?token=" + activationToken;
 
         String body = "Hello " + recipientName + ",\n\n"

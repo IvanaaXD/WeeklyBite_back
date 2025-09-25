@@ -10,10 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/api/weeks")
@@ -45,6 +44,21 @@ public class WeekController {
         GetWeekDTO weekDTO = weekService.getNextWeekByUserId(currentUser.getId());
         return new ResponseEntity<GetWeekDTO>(weekDTO, HttpStatus.OK);
     }
+
+    @GetMapping(value = "/past-weeks", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Collection<GetWeekDTO>> getPastWeeks() {
+        UserAccount currentUser = authService.getAuthenticatedUserAccount();
+        Collection<GetWeekDTO> weekDTOs = weekService.getPastWeeksByUserId(currentUser.getId());
+        return new ResponseEntity<Collection<GetWeekDTO>>(weekDTOs, HttpStatus.OK);
+    }
+
+    @PostMapping("/check-weeks")
+    public ResponseEntity<String> checkWeeksForCurrentUser() {
+        UserAccount currentUser = authService.getAuthenticatedUserAccount(); // ovo sada radi jer request ima JWT
+        weekService.checkWeeks(); // refaktorisana funkcija koja prima UserAccount
+        return ResponseEntity.ok("Weeks checked for user: " + currentUser.getEmail());
+    }
+
 
 //    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 //    @PreAuthorize("hasAuthority('ROLE_USER')")
