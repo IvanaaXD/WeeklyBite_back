@@ -9,7 +9,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "app_user")
+@Table(name = "authenticated_user")
 @PrimaryKeyJoinColumn(name = "id")
 public class User extends Person {
+
 }

@@ -1,5 +1,6 @@
 package com.backend.weeklybite.domain;
 
+import com.backend.weeklybite.domain.enums.AccountStatus;
 import com.backend.weeklybite.domain.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,7 +26,11 @@ public class UserAccount {
     private String password;
 
     @Enumerated(EnumType.STRING)
+    private AccountStatus accountStatus;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
+
     @Transient
     private String jwt;
 
@@ -35,4 +41,14 @@ public class UserAccount {
             inverseJoinColumns = @JoinColumn(name = "recipe_id"))
     private Collection<Recipe> favoriteRecipes;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Week> weeks;
+
+    @OneToOne
+    @JoinColumn(name = "current_week_id")
+    private Week currentWeek;
+
+    @OneToOne
+    @JoinColumn(name = "next_week_id")
+    private Week nextWeek;
 }

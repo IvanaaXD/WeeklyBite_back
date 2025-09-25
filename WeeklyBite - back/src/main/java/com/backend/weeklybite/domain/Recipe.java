@@ -1,5 +1,7 @@
 package com.backend.weeklybite.domain;
 
+import com.backend.weeklybite.converter.StepListConverter;
+import com.backend.weeklybite.domain.enums.RecipeCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,26 +27,34 @@ public class Recipe {
     private LocalDate created;
     private LocalDate updated;
     private String name;
-    private String description;
+    private String content;
     private Integer duration;
+    private Integer numberOfPeople;
+
+    @Enumerated(EnumType.STRING)
+    private RecipeCategory category;
 
     private Boolean isDeleted;
 
     // Relationships
 
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = StepListConverter.class)
+    private List<Step> description;
+
     @ManyToOne
     @JoinColumn(name = "admin_id")
-    private Admin admin;
+    private UserAccount admin;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = false)
     private List<Comment> comments;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "recipe_products",
+            name = "recipe_ingredient",
             joinColumns = @JoinColumn(name = "recipe_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id"))
-    private Collection<Product> products;
+            inverseJoinColumns = @JoinColumn(name = "ingredient_id"))
+    private Collection<Ingredient> products;
 
     @ElementCollection
     @CollectionTable(name = "recipe_pictures", joinColumns = @JoinColumn(name = "recipe_id"))

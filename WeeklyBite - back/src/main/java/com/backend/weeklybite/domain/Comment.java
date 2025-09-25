@@ -1,5 +1,6 @@
 package com.backend.weeklybite.domain;
 
+import com.backend.weeklybite.domain.enums.CommentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,9 @@ public class Comment {
     private LocalDate dateCreated;
 
     private Integer rating;
+
+    @Enumerated(EnumType.STRING)
+    private CommentStatus commentStatus;
 
     // Relationships
 
