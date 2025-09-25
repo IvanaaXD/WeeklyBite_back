@@ -12,8 +12,8 @@ import com.backend.weeklybite.specification.RecipeSpecification;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,14 @@ public class RecipeService implements IRecipeService {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private AccountService userService;
+
+    @Autowired
+    @Lazy
+    private WeekService weekService;
+
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -60,25 +70,59 @@ public class RecipeService implements IRecipeService {
         return dto;
     }
 
-    public List<GetRecipeDTO> getTopFiveRecipes() {
-        Pageable pageable = PageRequest.of(0, 5);
-        Page<Recipe> recipes = allRecipes.findAllLast(pageable);
+    @Override
+    public List<GetRecipeDTO> getTopFiveRecipes(UserAccount user) {
 
-        return recipes.stream().map(recipe -> {
-            GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+        List<Recipe> allRecipesList = allRecipes.findAll();
 
-            if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
-                List<String> urls = recipe.getPictures().stream()
-                        .map(fileStorageService::getFileUrl)
-                        .collect(Collectors.toList());
-                dto.setPictures(urls);
-            } else {
-                dto.setPictures(List.of());
-            }
+        Set<Long> favoriteIds = user.getFavoriteRecipes().stream()
+                .map(Recipe::getId)
+                .collect(Collectors.toSet());
 
-            return dto;
-        }).collect(Collectors.toList());
+        Map<Long, Long> usageCounts = weekService.getRecipeUsageCounts(user.getId());
+
+        List<RecipeScore> scoredRecipes = allRecipesList.stream()
+                .map(recipe -> {
+                    long score = 0;
+                    if (favoriteIds.contains(recipe.getId())) {
+                        score += 10;
+                    }
+                    score += usageCounts.getOrDefault(recipe.getId(), 0L);
+                    return new RecipeScore(recipe, score);
+                })
+                .sorted((r1, r2) -> Long.compare(r2.score, r1.score)) // sortiraj descending
+                .toList();
+
+        // 5. Uzmi top 5 i mapiraj u DTO
+        return scoredRecipes.stream()
+                .limit(5)
+                .map(rs -> {
+                    GetRecipeDTO dto = modelMapper.map(rs.recipe, GetRecipeDTO.class);
+                    if (rs.recipe.getPictures() != null && !rs.recipe.getPictures().isEmpty()) {
+                        List<String> urls = rs.recipe.getPictures().stream()
+                                .map(fileStorageService::getFileUrl)
+                                .collect(Collectors.toList());
+                        dto.setPictures(urls);
+                    } else {
+                        dto.setPictures(List.of());
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
+
+    // Pomoćna klasa za score
+    private static class RecipeScore {
+        Recipe recipe;
+        long score;
+
+        public RecipeScore(Recipe recipe, long score) {
+            this.recipe = recipe;
+            this.score = score;
+        }
+    }
+
+
 
     public Page<GetRecipeDTO> getAllRecipes(Pageable pageable) {
         Page<Recipe> recipesPage = allRecipes.findAllLast(

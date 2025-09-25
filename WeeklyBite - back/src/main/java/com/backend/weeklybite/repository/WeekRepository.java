@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface WeekRepository extends JpaRepository<Week, Long>, JpaSpecificationExecutor<Week> {
@@ -14,7 +15,7 @@ public interface WeekRepository extends JpaRepository<Week, Long>, JpaSpecificat
     @Query("SELECT w FROM Week w JOIN FETCH w.weekDays WHERE w.user.id = :userId")
     Optional<Week> findByUserId(@Param("userId") Long userId);
 
-    @Query("SELECT w FROM Week w JOIN FETCH w.weekDays " +
+    @Query("SELECT w FROM Week w LEFT JOIN FETCH w.weekDays " +
             "WHERE w.user.id = :userId AND w.startDate = :nextMonday")
     Optional<Week> findNextWeekByUserId(@Param("userId") Long userId, @Param("nextMonday") LocalDate nextMonday);
 
@@ -22,4 +23,5 @@ public interface WeekRepository extends JpaRepository<Week, Long>, JpaSpecificat
             "WHERE w.user.id = :userId AND :today BETWEEN w.startDate AND w.endDate")
     Optional<Week> findCurrentWeekByUserId(@Param("userId") Long userId, @Param("today") LocalDate today);
 
+    List<Week> findAllByUserId(Long userId);
 }

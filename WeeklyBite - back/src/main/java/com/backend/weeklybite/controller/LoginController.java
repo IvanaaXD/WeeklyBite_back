@@ -61,7 +61,9 @@ public class LoginController {
         response.setEmail(user.getEmail());
         response.setRole(roles.isEmpty() ? null : roles.get(0));
 
-        weekService.checkWeeks();
+        if (roles.contains("ROLE_USER")) {
+            weekService.checkWeeks();
+        }
 
         return response;
     }

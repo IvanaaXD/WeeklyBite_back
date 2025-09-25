@@ -51,7 +51,8 @@ public class RecipeController {
 
     @GetMapping(path = "/top-five", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetRecipeDTO>> getTopEvents() {
-        List<GetRecipeDTO> topEvents = recipeService.getTopFiveRecipes();
+        UserAccount getUser = authService.getAuthenticatedUserAccount();
+        List<GetRecipeDTO> topEvents = recipeService.getTopFiveRecipes(getUser);
         return new ResponseEntity<>(topEvents, HttpStatus.OK);
     }
 
