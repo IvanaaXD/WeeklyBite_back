@@ -149,7 +149,11 @@ public class AccountService implements IAccountService, UserDetailsService {
 
     @Override
     public GetAccountDTO verificateAccount(VerificateAccountDTO verificateAccountDTO) {
-        UserAccount account = allAccounts.findByEmail(verificateAccountDTO.getEmail()).orElseGet(null);
+        UserAccount account = allAccounts.findByEmail(verificateAccountDTO.getEmail()).orElse(null);
+
+        if (account == null) {
+            return null;
+        }
 
         account.setAccountStatus(AccountStatus.ACTIVE);
         UserAccount newUserAccount = allAccounts.save(account);

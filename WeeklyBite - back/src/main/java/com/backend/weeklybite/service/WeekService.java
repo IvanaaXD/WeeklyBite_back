@@ -56,6 +56,32 @@ public class WeekService implements IWeekService {
     }
 
     @Override
+    public GetWeekDTO createCurrentWeek(String userEmail) {
+
+        UserAccount user = allAccounts.findByEmail(userEmail)
+                .orElseThrow(() -> new EntityNotFoundException("User with email " + userEmail + " not found."));
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastMonday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        Week week = new Week();
+        week.setUser(user);
+        week.setStartDate(lastMonday);
+
+        LocalDate endOfWeek = lastMonday.plusDays(6);
+        week.setEndDate(endOfWeek);
+
+        List<WeekDay> weekDays = allWeekDays.createWeekDaysForWeek(week);
+        week.setWeekDays(weekDays);
+
+        Week createdWeek = allWeeks.save(week);
+        user.setCurrentWeek(createdWeek);
+        allAccounts.save(user);
+
+        return modelMapper.map(createdWeek, GetWeekDTO.class);
+    }
+
+    @Override
     public GetWeekDTO create() {
 
         LocalDate today = LocalDate.now();
@@ -105,6 +131,10 @@ public class WeekService implements IWeekService {
         UserAccount userAccount = authService.getAuthenticatedUserAccount();
         GetWeekDTO currentWeek = getCurrentWeekByUserId(userAccount.getId());
 
+        if (currentWeek == null) {
+            return;
+        }
+
         GetWeekDTO nextWeek = null;
         try {
             nextWeek = getNextWeekByUserId(userAccount.getId());
@@ -141,9 +171,12 @@ public class WeekService implements IWeekService {
     public GetWeekDTO getCurrentWeekByUserId(Long id) {
 
         LocalDate today = LocalDate.now();
-
         Week week = allWeeks.findCurrentWeekByUserId(id, today)
-                .orElseThrow(() -> new EntityNotFoundException("Week with id " + id + " not found"));
+                .orElse(null);
+
+        if (week == null) {
+            return null;
+        }
 
         return modelMapper.map(week, GetWeekDTO.class);
     }
@@ -156,7 +189,11 @@ public class WeekService implements IWeekService {
         System.out.println("Next Monday: " + nextMonday);
 
         Week week = allWeeks.findNextWeekByUserId(id, nextMonday)
-                .orElseThrow(() -> new EntityNotFoundException("Next week not found"));
+                .orElse(null);
+
+        if (week == null) {
+            return null;
+        }
 
         return modelMapper.map(week, GetWeekDTO.class);
     }

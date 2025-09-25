@@ -10,6 +10,9 @@ public interface IWeekService {
 
     GetWeekDTO getWeekByUserId(Long id);
 
+
+    GetWeekDTO createCurrentWeek(String userEmail);
+
     GetWeekDTO create();
 
     void checkWeeks();

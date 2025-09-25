@@ -4,8 +4,10 @@ import com.backend.weeklybite.dto.user.CreateUserDTO;
 import com.backend.weeklybite.dto.user.GetUserDTO;
 import com.backend.weeklybite.dto.user.UpdateUserDTO;
 import com.backend.weeklybite.service.PersonService;
+import com.backend.weeklybite.service.WeekService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,10 @@ public class PersonController {
 
     @Autowired
     private PersonService personService;
+
+    @Autowired
+    @Lazy
+    private WeekService weekService;
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GetUserDTO> getUser(@PathVariable("id") Long id) {
@@ -40,6 +46,8 @@ public class PersonController {
             @RequestPart(value = "agencyPictures", required = false) MultipartFile[] agencyPictureFiles) {
         try {
             personService.create(userDTO, profilePictureFile, agencyPictureFiles);
+            weekService.createCurrentWeek(userDTO.getEmail());
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body("{\"message\": \"Registration successful! Please check your email for an activation link.\"}");
         } catch (Exception e) {

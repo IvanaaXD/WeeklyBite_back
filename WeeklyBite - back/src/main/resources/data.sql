@@ -179,17 +179,20 @@ INSERT INTO week (id, start_date, end_date, user_id) VALUES
 (1, '2025-09-06', '2025-09-13', 6),
 (2, '2025-09-14', '2025-09-21', 6),
 (3, '2025-09-22', '2025-09-28', 6),
-(4, '2025-09-29', '2025-10-05', 6);
+(4, '2025-09-29', '2025-10-05', 6),
+(5, '2025-09-22', '2025-09-28', 7);
 
 -- Ubaci dane sedmica
 INSERT INTO week_day (day, week_id) VALUES
 ('MONDAY', 1), ('TUESDAY', 1), ('WEDNESDAY', 1), ('THURSDAY', 1), ('FRIDAY', 1), ('SATURDAY', 1), ('SUNDAY', 1),
 ('MONDAY', 2), ('TUESDAY', 2), ('WEDNESDAY', 2), ('THURSDAY', 2), ('FRIDAY', 2), ('SATURDAY', 2), ('SUNDAY', 2),
-('MONDAY', 3), ('TUESDAY', 3), ('WEDNESDAY', 3), ('THURSDAY', 3), ('FRIDAY', 3), ('SATURDAY', 3), ('SUNDAY', 3);
+('MONDAY', 3), ('TUESDAY', 3), ('WEDNESDAY', 3), ('THURSDAY', 3), ('FRIDAY', 3), ('SATURDAY', 3), ('SUNDAY', 3),
+('MONDAY', 4), ('TUESDAY', 4), ('WEDNESDAY', 4), ('THURSDAY', 4), ('FRIDAY', 4), ('SATURDAY', 4), ('SUNDAY', 4),
+('MONDAY', 5), ('TUESDAY', 5), ('WEDNESDAY', 5), ('THURSDAY', 5), ('FRIDAY', 5), ('SATURDAY', 5), ('SUNDAY', 5);
 
 -- Ubaci recepte
 INSERT INTO week_day_recipes (week_day_id, recipe_id) VALUES
-(1, 1), (2, 2), (3, 1), (5, 2), (7, 1), (9, 2), (15, 1), (17, 2), (18, 1), (19, 2);
+(1, 1), (2, 2), (3, 1), (5, 2), (7, 1), (9, 2), (15, 1), (17, 2), (18, 1), (19, 2), (20, 1), (14, 2), (24, 1), (22, 2) ;
 
 
 SELECT setval('user_account_id_seq', (SELECT MAX(id) FROM user_account));

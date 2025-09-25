@@ -3,6 +3,7 @@ package com.backend.weeklybite.service;
 import com.backend.weeklybite.domain.Ingredient;
 import com.backend.weeklybite.domain.Recipe;
 import com.backend.weeklybite.domain.UserAccount;
+import com.backend.weeklybite.domain.enums.Role;
 import com.backend.weeklybite.dto.ingredient.GetIngredientDTO;
 import com.backend.weeklybite.dto.recipe.*;
 import com.backend.weeklybite.repository.IngredientRepository;
@@ -72,8 +73,25 @@ public class RecipeService implements IRecipeService {
 
     @Override
     public List<GetRecipeDTO> getTopFiveRecipes(UserAccount user) {
-
         List<Recipe> allRecipesList = allRecipes.findAll();
+
+        if (user == null || user.getRole() == Role.ADMIN) {
+            return allRecipesList.stream()
+                    .limit(5)
+                    .map(recipe -> {
+                        GetRecipeDTO dto = modelMapper.map(recipe, GetRecipeDTO.class);
+                        if (recipe.getPictures() != null && !recipe.getPictures().isEmpty()) {
+                            List<String> urls = recipe.getPictures().stream()
+                                    .map(fileStorageService::getFileUrl)
+                                    .collect(Collectors.toList());
+                            dto.setPictures(urls);
+                        } else {
+                            dto.setPictures(List.of());
+                        }
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        }
 
         Set<Long> favoriteIds = user.getFavoriteRecipes().stream()
                 .map(Recipe::getId)

@@ -51,7 +51,12 @@ public class RecipeController {
 
     @GetMapping(path = "/top-five", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<GetRecipeDTO>> getTopEvents() {
-        UserAccount getUser = authService.getAuthenticatedUserAccount();
+        UserAccount getUser = null;
+        try {
+            getUser = authService.getAuthenticatedUserAccount();
+        } catch (UsernameNotFoundException e) {
+        }
+
         List<GetRecipeDTO> topEvents = recipeService.getTopFiveRecipes(getUser);
         return new ResponseEntity<>(topEvents, HttpStatus.OK);
     }
