@@ -54,8 +54,8 @@ public class WeekController {
 
     @PostMapping("/check-weeks")
     public ResponseEntity<String> checkWeeksForCurrentUser() {
-        UserAccount currentUser = authService.getAuthenticatedUserAccount(); // ovo sada radi jer request ima JWT
-        weekService.checkWeeks(); // refaktorisana funkcija koja prima UserAccount
+        UserAccount currentUser = authService.getAuthenticatedUserAccount();
+        weekService.checkWeeks();
         return ResponseEntity.ok("Weeks checked for user: " + currentUser.getEmail());
     }
 

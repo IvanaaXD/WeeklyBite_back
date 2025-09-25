@@ -33,16 +33,6 @@ public class WeekDayService implements IWeekDayService {
     @Autowired
     private EntityManager entityManager;
 
-    // --- Kreiranje dummy recepta ---
-    private Recipe createDummyRecipe() {
-        Recipe dummy = new Recipe();
-        dummy.setId(0L);                       // ID = 0 znači da je dummy
-        dummy.setComments(new ArrayList<>());   // prazne liste
-        dummy.setProducts(new ArrayList<>());
-        dummy.setPictures(new ArrayList<>());
-        return dummy;
-    }
-
     @Override
     public List<WeekDay> createWeekDaysForWeek(Week week) {
         List<WeekDay> weekDays = new ArrayList<>();

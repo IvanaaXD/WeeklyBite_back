@@ -77,7 +77,6 @@ public class FileStorageService {
         if (fileName == null || fileName.isEmpty()) {
             return null;
         }
-        // http://localhost:8080/uploads/your_image_uuid.jpg
         return serverHostLocal + ":" + serverPort + fileServingPath + fileName;
     }
 

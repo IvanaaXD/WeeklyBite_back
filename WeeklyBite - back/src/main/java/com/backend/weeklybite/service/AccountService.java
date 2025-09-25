@@ -71,7 +71,6 @@ public class AccountService implements IAccountService, UserDetailsService {
     @Override
     public GetAccountDTO getUserAccountById(Long id) {
         UserAccount account = allAccounts.findById(id).orElse(null);
-        //.orElseThrow(() -> new EntityNotFoundException("User with id "  id  " not found"));
         return modelMapper.map(account, GetAccountDTO.class);
     }
 

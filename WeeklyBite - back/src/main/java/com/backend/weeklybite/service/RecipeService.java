@@ -90,10 +90,9 @@ public class RecipeService implements IRecipeService {
                     score += usageCounts.getOrDefault(recipe.getId(), 0L);
                     return new RecipeScore(recipe, score);
                 })
-                .sorted((r1, r2) -> Long.compare(r2.score, r1.score)) // sortiraj descending
+                .sorted((r1, r2) -> Long.compare(r2.score, r1.score))
                 .toList();
 
-        // 5. Uzmi top 5 i mapiraj u DTO
         return scoredRecipes.stream()
                 .limit(5)
                 .map(rs -> {
@@ -111,7 +110,6 @@ public class RecipeService implements IRecipeService {
                 .collect(Collectors.toList());
     }
 
-    // Pomoćna klasa za score
     private static class RecipeScore {
         Recipe recipe;
         long score;
@@ -121,8 +119,6 @@ public class RecipeService implements IRecipeService {
             this.score = score;
         }
     }
-
-
 
     public Page<GetRecipeDTO> getAllRecipes(Pageable pageable) {
         Page<Recipe> recipesPage = allRecipes.findAllLast(

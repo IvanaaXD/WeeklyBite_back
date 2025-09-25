@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    // Handles Bean Validation errors
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -31,58 +31,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST); // 400 Bad Request
     }
 
-    // Handles specific custom exceptions
-//    @ExceptionHandler(UserAlreadyExistsException.class)
-//    public ResponseEntity<String> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
-//        return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-//
-//    @ExceptionHandler(FileStorageException.class)
-//    public ResponseEntity<String> handleFileStorageException(FileStorageException ex) {
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 Internal Server Error
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-//
-//    @ExceptionHandler(EmailServiceException.class)
-//    public ResponseEntity<String> handleEmailServiceException(EmailServiceException ex) {
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 Internal Server Error
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404 Not Found
                 .body("{\"message\": \"" + ex.getMessage() + "\"}");
     }
-
-    // NEWLY ADDED: Handles when a resource (like EventType or Category) is not found
-//    @ExceptionHandler(ResourceNotFoundException.class)
-//    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404 Not Found
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-
-    // If you introduce InvalidDataException for semantic validation errors
-//    @ExceptionHandler(InvalidDataException.class)
-//    public ResponseEntity<String> handleInvalidDataException(InvalidDataException ex) {
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST) // 400 Bad Request
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-//
-//    // Handles Spring Security's AccessDeniedException
-//    @ExceptionHandler(AccessDeniedException.class)
-//    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
-//        return ResponseEntity.status(HttpStatus.FORBIDDEN) // 403 Forbidden
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
-//
-//    // Handles Spring Security's UsernameNotFoundException (e.g., during login)
-//    @ExceptionHandler(UsernameNotFoundException.class)
-//    public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND) // 404 Not Found
-//                .body("{\"message\": \"" + ex.getMessage() + "\"}");
-//    }
 
     // Handles generic IllegalArgumentException, useful if you throw it for invalid input not caught by @Valid
     @ExceptionHandler(IllegalArgumentException.class)

@@ -29,7 +29,7 @@ public class JwtTokenUtil implements Serializable {
         Algorithm algorithm = Algorithm.HMAC256(SECRET_KEY);
         return JWT.create()
                 .withSubject(username)
-                .withClaim("role", roles) // Dodavanje uloga kao claim
+                .withClaim("role", roles)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .sign(algorithm);
@@ -44,7 +44,7 @@ public class JwtTokenUtil implements Serializable {
     // Get roles from JWT token
     public List<String> extractRoles(String token) {
         DecodedJWT decodedJWT = decodeToken(token);
-        return decodedJWT.getClaim("role").asList(String.class); // Dohvata uloge iz claim-a
+        return decodedJWT.getClaim("role").asList(String.class);
     }
 
     // Validate if the token is expired

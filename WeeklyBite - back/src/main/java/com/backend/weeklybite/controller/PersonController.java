@@ -35,7 +35,7 @@ public class PersonController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> registerUser(
-            @Valid @RequestPart("user") CreateUserDTO userDTO, // JSON string for user data
+            @Valid @RequestPart("user") CreateUserDTO userDTO,
             @RequestPart(value = "profilePicture", required = false) MultipartFile profilePictureFile,
             @RequestPart(value = "agencyPictures", required = false) MultipartFile[] agencyPictureFiles) {
         try {

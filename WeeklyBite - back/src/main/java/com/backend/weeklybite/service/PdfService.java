@@ -54,7 +54,7 @@ public class PdfService {
                 for (Step step : recipe.getDescription()) {
                     document.add(new Paragraph(step.getName(), boldFont));
                     document.add(new Paragraph(step.getDescription(), normalFont));
-                    document.add(new Paragraph(" ")); // spacing between steps
+                    document.add(new Paragraph(" "));
                 }
 
                 document.add(new Paragraph(" "));
